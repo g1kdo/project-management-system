@@ -14,14 +14,14 @@ public abstract class Project {
     private Task[] tasks;
     private int taskCount;
 
-    public Project(String projectName, String description, double budget, int teamSize, Task[] tasks, int taskCount) {
+    public Project(String projectName, String description, double budget, int teamSize) {
         this.projectID = String.format("PRJ%03d", idCounter++);
         this.projectName = projectName;
         this.description = description;
         this.budget = budget;
         this.teamSize = teamSize;
-        this.tasks = tasks;
-        this.taskCount = taskCount;
+        this.tasks = new Task[50]; // max 50 tasks per project
+        this.taskCount = 0;
     }
 
     public String getProjectID() {
@@ -50,6 +50,14 @@ public abstract class Project {
 
     public int getTaskCount() {
         return taskCount;
+    }
+
+    public void addTask(Task task) {
+        if (taskCount < tasks.length) {
+            tasks[taskCount++] = task;
+        } else {
+            System.out.println("Error: Task limit reached for this project:(");
+        }
     }
 
     public abstract String getProjectDetails();

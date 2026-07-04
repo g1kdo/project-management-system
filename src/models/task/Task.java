@@ -9,7 +9,7 @@ public class Task implements Completable {
     private String taskName;
     private Status status;
 
-    public Task(String taskID, String taskName, Status status) {
+    public Task(String taskName, Status status) {
         this.taskID = String.format("TSK%03d", idCounter++);
         this.taskName = taskName;
         this.status = status;
