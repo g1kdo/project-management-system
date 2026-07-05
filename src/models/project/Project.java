@@ -52,6 +52,10 @@ public abstract class Project {
         return taskCount;
     }
 
+    public void setTaskCount(int taskCount) {
+        this.taskCount = taskCount;
+    }
+
     public void addTask(Task task) {
         if (taskCount < tasks.length) {
             tasks[taskCount++] = task;
@@ -62,7 +66,7 @@ public abstract class Project {
 
     public abstract String getProjectDetails();
     public void displayProject() {
-        System.out.printf("%-4s | %-20s | %-12s | %-9d | $%,.2f%n",
+        System.out.printf("%-4s | %-20s | %-12s | %-9d | Rwf%,.2f%n",
                 projectID, projectName, getProjectDetails(), teamSize, budget);
         System.out.println("    | Description: " + description);
     }

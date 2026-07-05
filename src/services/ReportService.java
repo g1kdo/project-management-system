@@ -5,6 +5,14 @@ import models.task.Task;
 
 public class ReportService {
 
+    public double calculateProjectCompletionRate(Project project) {
+        if (project.getTaskCount() == 0) {
+            return 0.0;
+        }
+
+        return ((double) calculateTotalCompletedTasks(project) / project.getTaskCount()) * 100;
+    }
+
     public void generateStatusReport(ProjectService service) {
         System.out.println("\n╔════════════════════════════════════════════╗");
         System.out.println("║            PROJECT STATUS REPORT           ║");
@@ -29,7 +37,7 @@ public class ReportService {
 
             int completedTasks = calculateTotalCompletedTasks(project);
 
-            double progress = ((double) calculateTotalCompletedTasks(project) / totalTasks) * 100;
+            double progress = calculateProjectCompletionRate(project);
             totalCompletionSum += progress;
 
             System.out.printf("%-10s | %-17s | %-5d | %-9d | %.2f%%%n",
@@ -53,7 +61,7 @@ public class ReportService {
 
         Task[] tasks = project.getTasks();
         for (int i = 0; i < totalTasks; i++) {
-            if (tasks[i].isCompleted()) {
+            if (tasks[i] != null && tasks[i].isCompleted()) {
                 completedCount++;
             }
         }

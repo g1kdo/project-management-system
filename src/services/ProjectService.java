@@ -16,11 +16,11 @@ public class ProjectService {
     }
 
     private void initializeSampleData() {
-        addProject(new SoftwareProject("Alpha Tracker", "Task tracking app for startups", 15000.00, 5));
-        addProject(new HardwareProject("IoT Sensor Kit", "Sensor prototype for smart devices", 10000.00, 3));
-        addProject(new SoftwareProject("Beta Portal", "Customer onboarding dashboard", 45000.00, 12));
-        addProject(new HardwareProject("Smart Thermostat", "Home automation temperature grid", 22000.00, 4));
-        addProject(new SoftwareProject("Data Pipeline", "Real-time analytics syncing tool", 60000.00, 8));
+        addProject(new SoftwareProject("Alpha Tracker", "Task tracking app for startups", 15000000.00, 5));
+        addProject(new HardwareProject("IoT Sensor Kit", "Sensor prototype for smart devices", 10000000.00, 3));
+        addProject(new SoftwareProject("Beta Portal", "Customer onboarding dashboard", 45000000.00, 12));
+        addProject(new HardwareProject("Smart Thermostat", "Home automation temperature grid", 22000000.00, 4));
+        addProject(new SoftwareProject("Data Pipeline", "Real-time analytics syncing tool", 60000000.00, 8));
     }
 
     public void addProject(Project project) {

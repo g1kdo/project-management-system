@@ -19,6 +19,7 @@ public class TaskService {
         }
 
         Task newTask = new Task(taskName, Status.PENDING); // By default the initial status is pending
+        project.addTask(newTask);
         System.out.printf("✓ Task \"%s\" added successfully to Project %s:)%n", taskName, project.getProjectID());
     }
 
@@ -60,7 +61,7 @@ public class TaskService {
     public void removeTask(Project project, String taskId, User currentUser) {
         // Enforce user permission checks
         if (!Role.ADMIN.equals(currentUser.getRole())) {
-            System.out.println("❌ Error: Action denied. Only Admin users can remove task statuses.");
+            System.out.println("❌ Error: Action denied. Only Admin users can remove tasks.");
             return;
         }
 
@@ -85,6 +86,7 @@ public class TaskService {
             tasks[i] = tasks[i + 1];
         }
         tasks[count - 1] = null; // clean up the tail
+        project.setTaskCount(count - 1); // decrement taskCount
 
         System.out.println("✓ Task removed successfully:)");
     }
