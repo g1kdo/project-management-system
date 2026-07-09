@@ -10,6 +10,6 @@ public class HardwareProject extends Project{
 
     @Override
     public String getProjectDetails() {
-        return "Hardware";
+        return Type.HARDWARE.name();
     }
 }

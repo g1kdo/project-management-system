@@ -10,6 +10,6 @@ public class SoftwareProject extends Project{
 
     @Override
     public String getProjectDetails() {
-        return "Software";
+        return Type.SOFTWARE.name();
     }
 }
