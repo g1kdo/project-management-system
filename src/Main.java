@@ -36,21 +36,18 @@ public class Main {
             int choice = ValidationUtils.getValidInt(scan, "Enter your choice: ", 1, 5);
 
             switch (choice) {
-                case 1:
+                case 1 ->
                     manageProjectsMenu(scan);
-                    break;
-                case 2:
+                case 2 ->
                     manageTasksMenu(scan);
-                    break;
-                case 3:
+                case 3 ->
                     reportService.generateStatusReport(projectService);
-                    break;
-                case 4:
+                case 4 ->
                     switchUser(scan);
-                    break;
-                case 5:
+                case 5 -> {
                     System.out.println("Thank you for using our Project Management System!\nGoodbye:)");
                     running = false;
+                }
             }
         } while (running);
 
@@ -78,25 +75,22 @@ public class Main {
         System.out.println();
 
         switch (choice) {
-            case 1:
+            case 1 ->
                 projectService.displayAllProjects();
-                break;
-            case 2:
+            case 2 ->
                 projectService.displayProjectsByType("Software");
-                break;
-            case 3:
+            case 3 ->
                 projectService.displayProjectsByType("Hardware");
-                break;
-            case 4:
+            case 4 -> {
                 double min = ValidationUtils.getValidDouble(scan, "Enter minimum budget: ", 0.0);
                 double max = ValidationUtils.getValidDouble(scan, "Enter maximum budget: ", min);
                 projectService.searchByBydgetRange(min, max);
-                break;
-            case 5:
+            }
+            case 5 ->
                 handleCreateProject(scan);
-                break;
-            case 6:
+            case 6 -> {
                 return;
+            }
         }
 
         // Project detail tracking workflow
@@ -141,12 +135,12 @@ public class Main {
 
         int choice = ValidationUtils.getValidInt(scan, "Enter your choice: ",1, 4);
         switch (choice) {
-            case 1:
+            case 1 -> {
                 System.out.print("Enter task name: ");
                 String taskName = scan.nextLine().trim();
                 taskService.addTaskToProject(project, taskName);
-                break;
-            case 2:
+            }
+            case 2 -> {
                 System.out.print("Enter task ID: ");
                 String taskID = scan.nextLine().trim();
                 System.out.println("Enter new Status(Enter c for completed, i for in_progress or p for pending): ");
@@ -160,15 +154,13 @@ public class Main {
                 } else {
                     System.out.println("❌ Error: Invalid status. Please choose from [Pending p, In Progress i, Completed c].");
                 }
-                break;
-            case 3:
+            }
+            case 3 -> {
                 System.out.print("Enter task ID to remove: ");
-                taskID = scan.nextLine().trim();
+                String taskID = scan.nextLine().trim();
                 taskService.removeTask(project, taskID, currentUser);
-                break;
-            case 4:
-                manageProjectsMenu(scan);
-                break;
+            }
+            case 4 -> manageProjectsMenu(scan);
         }
     }
 
