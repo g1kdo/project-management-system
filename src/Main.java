@@ -106,7 +106,7 @@ public class Main {
                 Project project = projectService.findProjectById(projectID);
                 viewProjectDetailsWorkflow(scan, project);
             } catch (ProjectNotFoundException e) {
-                System.out.println(e.getMessage());
+                System.out.println("❌ Error: " + e.getMessage());
             }
         }
     }
@@ -139,7 +139,7 @@ public class Main {
     public  static void viewProjectDetailsWorkflow(Scanner scan, Project project) {
         ConsoleMenu.printDetailsMenu(project, taskService, reportService);
 
-        int choice = ValidationUtils.getValidInt(scan, "Enter your choice: ",1, 4);
+        int choice = ValidationUtils.getValidInt(scan, "Enter your choice: ",1, 6);
         switch (choice) {
             case 1 -> {
                 System.out.print("Enter task name: ");
@@ -147,7 +147,7 @@ public class Main {
                 try {
                     taskService.addTaskToProject(project, taskName);
                 } catch (InvalidInputException e) {
-                    System.out.println(e.getMessage());
+                    System.out.println("❌ Error: " + e.getMessage());
                 }
 
             }
@@ -166,7 +166,7 @@ public class Main {
                     };
                     taskService.updateTaskStatus(project, taskID, status, currentUser);
                 } catch (InvalidInputException | TaskNotFoundException e) {
-                    System.out.println(e.getMessage());
+                    System.out.println("❌ Error: " + e.getMessage());
                 }
 
             }
@@ -175,7 +175,9 @@ public class Main {
                 String taskID = scan.nextLine().trim();
                 taskService.removeTask(project, taskID, currentUser);
             }
-            case 4 -> manageProjectsMenu(scan);
+            case 4 -> projectService.displayTeam(project);
+            case 5 -> projectService.joinProject(project, currentUser);
+            case 6 -> manageProjectsMenu(scan);
         }
     }
 
@@ -186,7 +188,7 @@ public class Main {
             Project project = projectService.findProjectById(projectID);
             viewProjectDetailsWorkflow(scan, project);
         } catch (ProjectNotFoundException e) {
-            System.out.println(e.getMessage());
+            System.out.println("❌ Error: " + e.getMessage());
         }
     }
 

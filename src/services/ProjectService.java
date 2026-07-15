@@ -3,6 +3,7 @@ package services;
 import models.project.HardwareProject;
 import models.project.Project;
 import models.project.SoftwareProject;
+import models.user.User;
 import utils.exceptions.InvalidInputException;
 import utils.exceptions.ProjectNotFoundException;
 
@@ -33,7 +34,7 @@ public class ProjectService {
                 System.out.println("❌ Error: Maximum project capacity reached.");
             }
         } catch (InvalidInputException e) {
-            System.out.println(e.getMessage());
+            System.out.println("❌ Error: " + e.getMessage());
         }
     }
 
@@ -86,6 +87,30 @@ public class ProjectService {
         }
         if (!found) {
             System.out.println("No projects found within that budget range.");
+        }
+    }
+
+    public void joinProject(Project project, User user) {
+        if (project == null || user == null)
+            throw new InvalidInputException("Project or User not found:(");
+
+        project.addMember(user);
+        System.out.printf("✓ User '%s' has successfully joined Project %s.%n", user.getUserName(), project.getProjectID());
+    }
+
+    public void displayTeam(Project project) {
+        if (project == null)
+            throw new InvalidInputException("Project cannot be found:(");
+
+        int count = project.getTeamSize();
+        System.out.println("\n--- PROJECT TEAM MEMBERS ---");
+        if (count == 0) {
+            System.out.println("No members assigned to this project yet.");
+            return;
+        }
+        User[] members = project.getMembers();
+        for (int i = 0; i < count; i++) {
+            System.out.printf("- %s [%s] (%s)%n", members[i].getUserName(), members[i].getRole(), members[i].getUserEmail());
         }
     }
 }
