@@ -15,7 +15,7 @@ public class ConsoleMenu {
         System.out.println("Main Menu:");
         System.out.println("-----------");
         System.out.println("1. Manage Projects");
-        System.out.println("2. Manage Tasks");
+        System.out.println("2. Manage Tasks/Team");
         System.out.println("3. View Status Reports");
         System.out.println("4. Switch User");
         System.out.println("5. Exit");
@@ -43,13 +43,15 @@ public class ConsoleMenu {
         System.out.println("Team Size: " + project.getTeamSize());
         System.out.printf("Budget: Rwf%,.2f%n", project.getBudget());
         System.out.println("\nAssociated Tasks:");
-        taskService.viewTasksForProject(project);
+        taskService.displayTasksForProject(project);
         System.out.printf("Completion Rate: %.2f%%%n%n", reportService.calculateProjectCompletionRate(project));
 
         System.out.println("Options:");
         System.out.println("1. Add New Task");
         System.out.println("2. Update Task Status");
         System.out.println("3. Remove Task");
-        System.out.println("4. Back to Catalog");
+        System.out.println("4. View Assigned Team Members");
+        System.out.println("5. Join This Project Team");
+        System.out.println("6. Back to Catalog");
     }
 }
