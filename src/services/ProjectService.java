@@ -27,15 +27,11 @@ public class ProjectService {
     }
 
     public void addProject(Project project) {
-        try {
             if (projectCount < projects.length) {
                 projects[projectCount++] = project;
             } else {
                 System.out.println("❌ Error: Maximum project capacity reached.");
             }
-        } catch (InvalidInputException e) {
-            System.out.println("❌ Error: " + e.getMessage());
-        }
     }
 
     public Project[] getAllProjects() {

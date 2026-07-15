@@ -21,9 +21,6 @@ public abstract class Project {
     public Project(String projectName, String description, double budget) {
         if (projectName == null || projectName.strip().isEmpty())
             throw  new InvalidInputException("Project name cannot be empty.");
-        if (budget <= 0)
-            throw new InvalidInputException("Budget must be a positive value.");
-
         this.projectID = String.format("PRJ%03d", idCounter++);
         this.projectName = projectName;
         this.description = description;

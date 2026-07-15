@@ -123,17 +123,22 @@ public class Main {
         String description = scan.nextLine().trim();
         double budget = ValidationUtils.getValidDouble(scan, "Enter budget: Rwf", 0.0);
 
-        Project newProject;
-        if (choice == 1) {
-            newProject = new SoftwareProject(name, description, budget);
-            newProject.addMember(currentUser);
-        } else {
-            newProject = new HardwareProject(name, description, budget);
-            newProject.addMember(currentUser);
+        try {
+            Project newProject;
+            if (choice == 1) {
+                newProject = new SoftwareProject(name, description, budget);
+                newProject.addMember(currentUser);
+            } else {
+                newProject = new HardwareProject(name, description, budget);
+                newProject.addMember(currentUser);
+            }
+
+            projectService.addProject(newProject);
+            System.out.printf("✓ Project successfully created with ID: %s%n", newProject.getProjectID());
+        } catch (InvalidInputException e) {
+            System.out.println("❌ Error: " + e.getMessage());
         }
 
-        projectService.addProject(newProject);
-        System.out.printf("✓ Project successfully created with ID: %s%n", newProject.getProjectID());
     }
 
     public  static void viewProjectDetailsWorkflow(Scanner scan, Project project) {
@@ -176,7 +181,13 @@ public class Main {
                 taskService.removeTask(project, taskID, currentUser);
             }
             case 4 -> projectService.displayTeam(project);
-            case 5 -> projectService.joinProject(project, currentUser);
+            case 5 -> {
+                try {
+                    projectService.joinProject(project, currentUser);
+                } catch (InvalidInputException e) {
+                    System.out.println("❌ Error: " + e.getMessage());;
+                }
+            }
             case 6 -> manageProjectsMenu(scan);
         }
     }
