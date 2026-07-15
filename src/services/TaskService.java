@@ -5,6 +5,8 @@ import models.task.Status;
 import models.task.Task;
 import models.user.Role;
 import models.user.User;
+import utils.exceptions.InvalidInputException;
+import utils.exceptions.TaskNotFoundException;
 
 public class TaskService {
 
@@ -13,8 +15,7 @@ public class TaskService {
         Task[] tasks = project.getTasks();
         for (int i = 0; i < project.getTaskCount(); i++) {
             if (tasks[i].getTaskName().equalsIgnoreCase(taskName)) {
-                System.out.println("❌ Error: A task with this name already exists in the project:(");
-                return;
+                throw new InvalidInputException("❌ Error: A task with this name already exists in the project:(");
             }
         }
 
@@ -23,7 +24,7 @@ public class TaskService {
         System.out.printf("✓ Task \"%s\" added successfully to Project %s:)%n", taskName, project.getProjectID());
     }
 
-    public void viewTasksForProject(Project project) {
+    public void displayTasksForProject(Project project) {
         int taskCount = project.getTaskCount();
         if (taskCount == 0) {
             System.out.println("No tasks found for this project:(");
@@ -44,8 +45,7 @@ public class TaskService {
     public void updateTaskStatus(Project project, String taskId, Status newStatus, User currentUser) {
         // Enforce user permission checks
         if (!Role.ADMIN.equals(currentUser.getRole())) {
-            System.out.println("❌ Error: Action denied. Only Admin users can update task statuses.");
-            return;
+            throw new InvalidInputException("❌ Error: Action denied. Only Admin users can update task statuses.");
         }
 
         Task[] tasks = project.getTasks();
@@ -55,7 +55,7 @@ public class TaskService {
                 System.out.printf("Task \"%s\" marked as %s.%n", tasks[i].getTaskName(), newStatus.name());
             }
         }
-        System.out.println("❌ Error: Task ID not found in this project:(");
+        throw new TaskNotFoundException("❌ Error: Task ID '" + taskId + "' not found in this project:(");
     }
 
     public void removeTask(Project project, String taskId, User currentUser) {

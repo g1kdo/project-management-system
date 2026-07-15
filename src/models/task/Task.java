@@ -1,6 +1,7 @@
 package models.task;
 
 import interfaces.Completable;
+import utils.exceptions.InvalidInputException;
 
 public class Task implements Completable {
 
@@ -10,6 +11,8 @@ public class Task implements Completable {
     private Status status;
 
     public Task(String taskName, Status status) {
+        if (taskName == null || taskName.strip().isEmpty())
+            throw new InvalidInputException("Task name cannot be empty.");
         this.taskID = String.format("TSK%03d", idCounter++);
         this.taskName = taskName;
         this.status = status;

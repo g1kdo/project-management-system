@@ -43,7 +43,7 @@ public class ConsoleMenu {
         System.out.println("Team Size: " + project.getTeamSize());
         System.out.printf("Budget: Rwf%,.2f%n", project.getBudget());
         System.out.println("\nAssociated Tasks:");
-        taskService.viewTasksForProject(project);
+        taskService.displayTasksForProject(project);
         System.out.printf("Completion Rate: %.2f%%%n%n", reportService.calculateProjectCompletionRate(project));
 
         System.out.println("Options:");

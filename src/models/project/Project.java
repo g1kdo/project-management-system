@@ -1,6 +1,8 @@
 package models.project;
 
 import models.task.Task;
+import models.user.User;
+import utils.exceptions.InvalidInputException;
 
 public abstract class Project {
 
@@ -9,17 +11,25 @@ public abstract class Project {
     private String projectName;
     private String description;
     private double budget;
+
+    private User[] members;
     private int teamSize;
 
     private Task[] tasks;
     private int taskCount;
 
-    public Project(String projectName, String description, double budget, int teamSize) {
+    public Project(String projectName, String description, double budget) {
+        if (projectName == null || projectName.strip().isEmpty())
+            throw  new InvalidInputException("Project name cannot be empty.");
+        if (budget <= 0)
+            throw new InvalidInputException("Budget must be a positive value.");
+
         this.projectID = String.format("PRJ%03d", idCounter++);
         this.projectName = projectName;
         this.description = description;
         this.budget = budget;
-        this.teamSize = teamSize;
+        this.members = new User[100]; // max 100 members per project
+        this.teamSize = 0;
         this.tasks = new Task[50]; // max 50 tasks per project
         this.taskCount = 0;
     }
@@ -40,6 +50,10 @@ public abstract class Project {
         return budget;
     }
 
+    public User[] getMembers() {
+        return members;
+    }
+
     public int getTeamSize() {
         return teamSize;
     }
@@ -56,12 +70,28 @@ public abstract class Project {
         this.taskCount = taskCount;
     }
 
-    public void addTask(Task task) {
-        if (taskCount < tasks.length) {
-            tasks[taskCount++] = task;
-        } else {
-            System.out.println("Error: Task limit reached for this project:(");
+    public void addMember(User user) {
+        if (user == null)
+            throw new InvalidInputException("No users found to add to project:(");
+
+        // prevent adding duplicate users
+        for (int i = 0; i < teamSize; i++) {
+            if (members[i].getUserID().equals(user.getUserID()))
+                throw new InvalidInputException("User '" + user.getUserName() + "' is already a member of this project.");
         }
+        if (teamSize >= members.length)
+            throw new InvalidInputException("Member capacity reached for this project.");
+
+        members[teamSize++] = user;
+    }
+
+    public void addTask(Task task) {
+        if (task == null)
+            throw new InvalidInputException("Cannot add a null task.");
+        if (taskCount >= tasks.length)
+            throw new InvalidInputException("Task limit of " + tasks.length + " reached for this project");
+
+        tasks[taskCount++] = task;
     }
 
     public abstract String getProjectDetails();
