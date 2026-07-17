@@ -1,7 +1,15 @@
 package models.task;
 
 import interfaces.Completable;
+import utils.exceptions.InvalidInputException;
 
+/**
+ * Represents an individual project assignment.
+ * Implements the {@link interfaces.Completable} interface to track status life cycles.
+ *
+ * @author Katy Great Adonai
+ * @version 2.0
+ */
 public class Task implements Completable {
 
     private static int idCounter = 1;
@@ -10,6 +18,8 @@ public class Task implements Completable {
     private Status status;
 
     public Task(String taskName, Status status) {
+        if (taskName == null || taskName.strip().isEmpty())
+            throw new InvalidInputException("Task name cannot be empty.");
         this.taskID = String.format("TSK%03d", idCounter++);
         this.taskName = taskName;
         this.status = status;

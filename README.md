@@ -20,14 +20,19 @@ project-management-system/
 ├── src/
 │   ├── Main.java                     # Application entry point
 │   ├── models/
-│   │   ├── Project.java              # Abstract base class
-│   │   ├── SoftwareProject.java      # Concrete project type
-│   │   ├── HardwareProject.java      # Concrete project type
-│   │   ├── Task.java                 # Task model
-│   │   ├── User.java                 # Abstract user base
-│   │   ├── RegularUser.java          # Concrete user type
-│   │   ├── AdminUser.java            # Concrete user type
-│   │   └── StatusReport.java         # Status report generation
+|   |   ├── project/
+|   │   │   ├── Project.java              # Abstract base class
+|   │   │   ├── SoftwareProject.java      # Concrete project type
+|   │   │   ├── HardwareProject.java      # Concrete project type
+|   │   │   └──Type.java                 # Project Type Enum
+|   |   ├── task/
+|   │   │   ├── Task.java                 # Task model   
+|   │   │   └── Status.java               # Task Status Enum
+|   |   └── user/
+|   │       ├── User.java                 # Abstract user base
+|   │       ├── RegularUser.java          # Concrete user type
+|   │       ├── AdminUser.java            # Concrete user type
+|   │       └── Role.java                 # User Role Enum
 │   │
 │   ├── interfaces/
 │   │   └── Completable.java          # Interface for completion logic
@@ -39,8 +44,19 @@ project-management-system/
 │   │
 │   └── utils/
 │       ├── ConsoleMenu.java          # Menu handling
-│       └── ValidationUtils.java      # Input validation
+│       ├── ValidationUtils.java      # Input validation
+│       └── exceptions/               # Custom runtime boundaries
+│           ├── InvalidInputException.java
+│           ├── TaskNotFoundException.java
+│           ├── EmptyProjectException.java
+│           └── ProjectNotFoundException.java[cite: 2]
 │
+├── test/                             # Automated JUnit validation suites[cite: 2]
+│   ├── ProjectTests.java
+│   ├── TaskTests.java
+│   └── ValidationTests.java
+|
+|
 ├── docs/
 │   ├── class-diagram.png
 │   └── design-decisions.md
@@ -58,46 +74,49 @@ project-management-system/
 button at the top of the window.
 
 ---
-## Feature Summary 
+## Setup & Run Instructions
+
+- Installed JDK 21 and IntelliJ IDEA
+- Configure JUnit libraries within your environment classpath
+
+> To run the main application workflow, target `Main.java` and click the execution arrow within your IDE dashboard.
+> To verify code stability, execute the suites inside the `/test` folder via the integrated test runner window.
+
+---
+## Feature Summary
 
 ### Feature 1: Project Catalog Management
 
-Following the Epic 1: Project Catalog Management, the user is able to: 
+Following the Epic 1: Project Catalog Management, the user is able to:
 - Create new projects (e.g., `SoftwareProject`, `HardwareProject`)
-- View all existing projects with details (ID, name, description, team size, budget, etc.)
-- Filter projects by type (software/hardware)
-- Display project-specific attributes dynamically
+- View all existing projects with explicit, scannable data layouts
+- Filter projects dynamically by specific type configurations
+- Enforce positive budget allocations and validate records via standard exception traps
 
 ### Feature 2: Task Operations
 
 Following the Epic 2: Task Operations, the user is able to:
-- Add tasks to specific projects
-- Assign task status (Pending, In Progress, Completed)
-- View all tasks per project with progress details
-- Update or delete tasks
-- Validate inputs to prevent invalid task status or duplicate task names
+- Add tasks to specific projects with validation preventing duplicate names
+- Assign and track normalized statuses (Pending, In Progress, Completed)
+- Update tasks gracefully while intercepting bad actions via `TaskNotFoundException`
 
-### Feature 3: User Management
+### Feature 3: User Management & Dynamic Teams
 
-Following the Epic 3: User Management, the system is able to: 
-- Create and manage system users (`RegularUser` and `AdminUser`)
-- Assign users to projects or tasks
-- Enforce role-based access (Admin can delete/update; Regular can view/add)
-- Automatically generate unique user IDs
+Following the Epic 3: User Management, the system is able to:
+- Manage system profiles (`RegularUser` and `AdminUser`) with role-based restrictions
+- Dynamically add users as members to target projects (`joinProject`)
+- Calculate team size properties continuously based on real member arrays, removing manual variables
+- Review project rosters inside an isolated team dashboard (`viewTeam`)
 
 ### Feature 4: Status Processing & Reporting
 
-Following the Epic 4: Status Processing & Reporting, the system is able to: 
-- Calculate and display completion averages per project
-- Generate status reports (e.g., "Project Alpha is 75% complete")
-- Display task statistics: total, completed, and pending counts
-- Show per-user performance summaries (future expansion)
+Following the Epic 4: Status Processing & Reporting, the system is able to:
+- Calculate exact completion percentages using object method boundaries
+- Throw an explicit `EmptyProjectException` when generating progress calculations over unassigned project objects
+- Round progress and average fields to two decimal places
 
-### Feature 5: Menu Navigation & User Experience
+### Feature 5: Menu Navigation & Error Stability
 
-Following the Epic 5: Menu Navigation & Application Control, the system is able to: 
-- Display a clear main menu and sub-menus for operations
-- Validate all user inputs (numbers, text, IDs)
-- Provide formatted outputs with clear sections and alignment
-- Support graceful exit and return navigation
-
+Following the Epic 5: Menu Navigation & Application Control, the system is able to:
+- Present menu layers without experiencing hard runtime crashes during bad entry inputs
+- Log clean warning strings to the console user, prompting immediate input correction cycles

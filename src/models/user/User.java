@@ -1,5 +1,7 @@
 package models.user;
 
+import utils.exceptions.InvalidInputException;
+
 public abstract class User {
 
     private static int idCounter;
@@ -9,6 +11,11 @@ public abstract class User {
     private Role role;
 
     public User(String userName, String userEmail, Role role) {
+        if (userName == null || userName.strip().isEmpty())
+            throw new InvalidInputException("User name cannot be empty.");
+        if (userEmail == null || userEmail.strip().isEmpty())
+            throw new InvalidInputException("User email cannot be empty.");
+
         this.userID = String.format("USR%03d", idCounter++);
         this.userName = userName;
         this.userEmail = userEmail;

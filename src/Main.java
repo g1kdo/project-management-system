@@ -10,6 +10,9 @@ import services.ReportService;
 import services.TaskService;
 import utils.ConsoleMenu;
 import utils.ValidationUtils;
+import utils.exceptions.InvalidInputException;
+import utils.exceptions.ProjectNotFoundException;
+import utils.exceptions.TaskNotFoundException;
 
 import java.util.Scanner;
 
@@ -21,8 +24,10 @@ public class Main {
 
     private static User[] users = new User[] {
             new AdminUser("Katy Great Adonai", "katygreatado@gmail.com"),
-            new RegularUser("Aline Mukundwa", "mukaline@gmail.com")
+            new RegularUser("Aline NZIKWINKUNDA", "nzikaline@gmail.com")
     };
+
+
     private static User currentUser = users[0];
 
     public static void main(String[] args) {
@@ -36,21 +41,18 @@ public class Main {
             int choice = ValidationUtils.getValidInt(scan, "Enter your choice: ", 1, 5);
 
             switch (choice) {
-                case 1:
+                case 1 ->
                     manageProjectsMenu(scan);
-                    break;
-                case 2:
+                case 2 ->
                     manageTasksMenu(scan);
-                    break;
-                case 3:
+                case 3 ->
                     reportService.generateStatusReport(projectService);
-                    break;
-                case 4:
+                case 4 ->
                     switchUser(scan);
-                    break;
-                case 5:
+                case 5 -> {
                     System.out.println("Thank you for using our Project Management System!\nGoodbye:)");
                     running = false;
+                }
             }
         } while (running);
 
@@ -78,36 +80,33 @@ public class Main {
         System.out.println();
 
         switch (choice) {
-            case 1:
+            case 1 ->
                 projectService.displayAllProjects();
-                break;
-            case 2:
+            case 2 ->
                 projectService.displayProjectsByType("Software");
-                break;
-            case 3:
+            case 3 ->
                 projectService.displayProjectsByType("Hardware");
-                break;
-            case 4:
+            case 4 -> {
                 double min = ValidationUtils.getValidDouble(scan, "Enter minimum budget: ", 0.0);
                 double max = ValidationUtils.getValidDouble(scan, "Enter maximum budget: ", min);
                 projectService.searchByBydgetRange(min, max);
-                break;
-            case 5:
+            }
+            case 5 ->
                 handleCreateProject(scan);
-                break;
-            case 6:
+            case 6 -> {
                 return;
+            }
         }
 
         // Project detail tracking workflow
         System.out.print("Enter project ID to view details (or 0 to return): ");
         String projectID = scan.nextLine().trim();
         if (!projectID.equals("0")) {
-            Project project = projectService.findProjectById(projectID);
-            if (project != null) {
+            try {
+                Project project = projectService.findProjectById(projectID);
                 viewProjectDetailsWorkflow(scan, project);
-            } else {
-                System.out.println("❌ Error: Project ID not found:(");
+            } catch (ProjectNotFoundException e) {
+                System.out.println("❌ Error: " + e.getMessage());
             }
         }
     }
@@ -123,64 +122,85 @@ public class Main {
         System.out.print("Enter description: ");
         String description = scan.nextLine().trim();
         double budget = ValidationUtils.getValidDouble(scan, "Enter budget: Rwf", 0.0);
-        int teamSize = ValidationUtils.getValidInt(scan, "Enter team size: ", 1, 100);
 
-        Project newProject;
-        if (choice == 1) {
-            newProject = new SoftwareProject(name, description, budget, teamSize);
-        } else {
-            newProject = new HardwareProject(name, description, budget, teamSize);
+        try {
+            Project newProject;
+            if (choice == 1) {
+                newProject = new SoftwareProject(name, description, budget);
+                newProject.addMember(currentUser);
+            } else {
+                newProject = new HardwareProject(name, description, budget);
+                newProject.addMember(currentUser);
+            }
+
+            projectService.addProject(newProject);
+            System.out.printf("✓ Project successfully created with ID: %s%n", newProject.getProjectID());
+        } catch (InvalidInputException e) {
+            System.out.println("❌ Error: " + e.getMessage());
         }
 
-        projectService.addProject(newProject);
-        System.out.printf("✓ Project successfully created with ID: %s%n", newProject.getProjectID());
     }
 
     public  static void viewProjectDetailsWorkflow(Scanner scan, Project project) {
         ConsoleMenu.printDetailsMenu(project, taskService, reportService);
 
-        int choice = ValidationUtils.getValidInt(scan, "Enter your choice: ",1, 4);
+        int choice = ValidationUtils.getValidInt(scan, "Enter your choice: ",1, 6);
         switch (choice) {
-            case 1:
+            case 1 -> {
                 System.out.print("Enter task name: ");
                 String taskName = scan.nextLine().trim();
-                taskService.addTaskToProject(project, taskName);
-                break;
-            case 2:
+                try {
+                    taskService.addTaskToProject(project, taskName);
+                } catch (InvalidInputException e) {
+                    System.out.println("❌ Error: " + e.getMessage());
+                }
+
+            }
+            case 2 -> {
                 System.out.print("Enter task ID: ");
                 String taskID = scan.nextLine().trim();
                 System.out.println("Enter new Status(Enter c for completed, i for in_progress or p for pending): ");
                 String newStatus = scan.nextLine().trim();
-                if (newStatus.equalsIgnoreCase("c")) {
-                    taskService.updateTaskStatus(project, taskID, Status.COMPLETED, currentUser);
-                } else if (newStatus.equalsIgnoreCase("i")) {
-                    taskService.updateTaskStatus(project, taskID, Status.IN_PROGRESS, currentUser);
-                } else if (newStatus.equalsIgnoreCase("p")) {
-                    taskService.updateTaskStatus(project, taskID, Status.PENDING, currentUser);
-                } else {
-                    System.out.println("❌ Error: Invalid status. Please choose from [Pending p, In Progress i, Completed c].");
+
+                try {
+                    Status status = switch (newStatus.toLowerCase()) {
+                        case "c" -> Status.COMPLETED;
+                        case "i" -> Status.IN_PROGRESS;
+                        case "p" -> Status.PENDING;
+                        default -> throw new InvalidInputException("❌ Error: Invalid status. Please choose from [Pending p, In Progress i, Completed c].");
+                    };
+                    taskService.updateTaskStatus(project, taskID, status, currentUser);
+                } catch (InvalidInputException | TaskNotFoundException e) {
+                    System.out.println("❌ Error: " + e.getMessage());
                 }
-                break;
-            case 3:
+
+            }
+            case 3 -> {
                 System.out.print("Enter task ID to remove: ");
-                taskID = scan.nextLine().trim();
+                String taskID = scan.nextLine().trim();
                 taskService.removeTask(project, taskID, currentUser);
-                break;
-            case 4:
-                manageProjectsMenu(scan);
-                break;
+            }
+            case 4 -> projectService.displayTeam(project);
+            case 5 -> {
+                try {
+                    projectService.joinProject(project, currentUser);
+                } catch (InvalidInputException e) {
+                    System.out.println("❌ Error: " + e.getMessage());;
+                }
+            }
+            case 6 -> manageProjectsMenu(scan);
         }
     }
 
     private static void manageTasksMenu(Scanner scan) {
         System.out.print("Enter the target Project ID to manage tasks: ");
         String projectID = scan.nextLine().trim();
-        Project project = projectService.findProjectById(projectID);
-        if (project == null) {
-            System.out.println("❌ Error: Project ID not found.");
-            return;
+        try {
+            Project project = projectService.findProjectById(projectID);
+            viewProjectDetailsWorkflow(scan, project);
+        } catch (ProjectNotFoundException e) {
+            System.out.println("❌ Error: " + e.getMessage());
         }
-        viewProjectDetailsWorkflow(scan, project);
     }
 
     private static void switchUser(Scanner scan) {
