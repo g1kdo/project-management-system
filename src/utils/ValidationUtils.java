@@ -4,6 +4,13 @@ import models.task.Task;
 
 import java.util.Scanner;
 
+/**
+ * Utility toolkit providing defensive input filtering methods.
+ * Captures scanning and conversion anomalies to insulate console loops from runtime crashes.
+ *
+ * @author Katy Great Adonai
+ * @version 2.0
+ */
 public class ValidationUtils {
     public static int getValidInt(Scanner scan, String prompt, int min, int max) {
         while (true) {

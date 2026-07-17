@@ -7,6 +7,14 @@ import models.user.User;
 import utils.exceptions.InvalidInputException;
 import utils.exceptions.ProjectNotFoundException;
 
+/**
+ * Business service layer responsible for managing project operations.
+ * Handles project creation, catalog searches, and team member alignments
+ * using internal data structures.
+ *
+ * @author Katy Great Adonai
+ * @version 2.0
+ */
 public class ProjectService {
 
     private Project[] projects;

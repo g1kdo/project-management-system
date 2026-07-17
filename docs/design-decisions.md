@@ -2,8 +2,8 @@
 
 ## Overview
 
-The Project Management System was designed using Object-Oriented Programming (OOP) principles to create a modular, 
-maintainable, and extensible console application. The system separates responsibilities into models, interfaces, services, and 
+The Project Management System was designed using Object-Oriented Programming (OOP) principles to create a modular,
+maintainable, and extensible console application. The system separates responsibilities into models, interfaces, services, and
 utility classes, making it easier to manage application logic and support future enhancements.
 
 ---
@@ -12,32 +12,33 @@ utility classes, making it easier to manage application logic and support future
 The application is divided into three major layers:
 
 - **Models**
-    - Represent the application's data.
+    - Represent the application's data and encapsulate baseline constraints.
     - Examples:
         - Project
         - Task
         - User
 
 - **Services**
-    - Contain business logic.
+    - Contain business logic and coordinate state mutations safely.
     - Examples:
         - ProjectService
         - TaskService
         - ReportService
 
 - **Utilities**
-    - Handle reusable helper functionality.
+    - Handle reusable helper functionality, input parsing, and custom error types.
     - Examples:
         - ValidationUtils
         - ConsoleMenu
+        - Exceptions (`InvalidInputException`, `TaskNotFoundException`, `EmptyProjectException`, `ProjectNotFoundException`)
 
-In addition, The application uses a `Completable` interface to define behavior for objects that can report whether they are complete.
+In addition, the application uses a `Completable` interface to define behavior for objects that can report whether they are complete.
 The `Task` class implements this interface by providing the `isCompleted()` method based on the task's current status.
 
 This separation keeps the `Main` class focused on controlling program flow rather than implementing business logic.
 
 ---
-# 2. Use of Inheritance
+# 2. Use of Inheritance & Dynamic Association
 
 Inheritance was used to model different project and user types.
 
@@ -49,13 +50,16 @@ The abstract `Project` class stores shared information such as:
 - Name
 - Description
 - Budget
-- Team Size
+- Members (An array of assigned `User` objects replacing manual tracking)
 - Tasks
 
 Specific project types extend this class:
 
 - SoftwareProject
 - HardwareProject
+
+Instead of entering team sizes manually, projects now dynamically maintain a roster of concrete `User` entities. Calling
+`getTeamSize()` evaluates the runtime occupancy of the member array, enforcing a strong object association.
 
 ---
 ## Users
@@ -103,45 +107,55 @@ Administrative actions are protected using user roles.
 For example:
 
 - Only administrators may remove tasks.
+
 - Only administrators may change task status.
 
-The current user is stored in the application and passed into service methods for permission checking.
+The current user profile is passed into service layers to check compliance before modifying tasks, throwing an exception if unauthorized.
 
 ---
-# 5. Input Validation
+# 5. Robust Exception Handling
 
-All user input is validated before processing using the `ValidationUtils` class.
+User validation is backed by a custom exception framework under `utils.exceptions`. Instead of traditional conditional error printing, unexpected operations trigger explicitly typed exceptions:
 
-Examples include:
+- `InvalidInputException`: Thrown when project metrics or status parameters fail formatting laws.
 
-- integer validation
-- double validation
-- range checking
+- `ProjectNotFoundException`: Dispatched when querying mismatched project identifiers.
 
-Centralizing validation avoids duplicated code throughout the application.
+- `TaskNotFoundException`: Handled when target tasks cannot be discovered within parent projects.
+
+- `EmptyProjectException`: Raised when progress summaries run against projects completely devoid of active tasks.
+
+Centralizing validation avoids duplicate code and shields the runtime container from sudden input-driven failures.
 
 ---
-# 6. In-Memory Storage
+# 6. Automated Unit Testing
 
-Projects and users are stored in arrays during program execution.
+The core completion and membership mechanics are verified utilizing JUnit testing frameworks. This guarantees that formula 
+changes, status adjustments, and registration constraints yield reliable outcomes under rigorous boundary constraints.
 
-This approach was chosen because:
+---
+# 7. In-Memory Storage
 
-- it satisfies the project requirements
-- it keeps the implementation simple
-- no external database is required
+Projects and users remain stored inside bounded arrays during execution, satisfying the pure in-memory constraints without 
+requiring an active external database layer.
 
 ---
 # Summary
 
 The design emphasizes:
 
-- Object-Oriented Programming principles
-- Separation of concerns
-- Inheritance and polymorphism
-- Role-based access control
-- Modular service classes
-- Input validation
-- Maintainability and future extensibility
+Object-Oriented Programming principles
 
-These decisions produce a structured console application that is easier to understand, test, and extend.
+- Separation of concerns
+
+- Inheritance and polymorphism
+
+- Role-based access control
+
+- Clean, decoupled service operations (SOLID)
+
+- Custom exception propagation and stable menu loops
+
+- Dynamic model cross-linking
+
+- High maintainability and testability via JUnit suites

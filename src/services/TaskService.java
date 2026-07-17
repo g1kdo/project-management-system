@@ -8,6 +8,13 @@ import models.user.User;
 import utils.exceptions.InvalidInputException;
 import utils.exceptions.TaskNotFoundException;
 
+/**
+ * Business service layer responsible for manipulating task assignments.
+ * Enforces duplicate constraints and implements role-based modifications.
+ *
+ * @author Katy Great Adonai
+ * @version 2.0
+ */
 public class TaskService {
 
     public void addTaskToProject(Project project, String taskName) {

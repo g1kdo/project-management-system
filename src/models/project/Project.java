@@ -4,6 +4,17 @@ import models.task.Task;
 import models.user.User;
 import utils.exceptions.InvalidInputException;
 
+/**
+ * Represents an abstract Project within the system.
+ * Enforces validation rules on core project details and maintains
+ * an in-memory roster of tasks and team members.
+ *
+ * <p>The project's team size is computed dynamically based on the
+ * active count of assigned team members.</p>
+ *
+ * @author Katy Great Adonai
+ * @version 2.0
+ */
 public abstract class Project {
 
     private static int idCounter = 1;
