@@ -5,6 +5,7 @@ import models.user.User;
 import services.ProjectService;
 import services.ReportService;
 import services.TaskService;
+import utils.exceptions.EmptyProjectException;
 
 public class ConsoleMenu {
     public static void printMainMenu(User currentUser) {
@@ -44,7 +45,11 @@ public class ConsoleMenu {
         System.out.printf("Budget: Rwf%,.2f%n", project.getBudget());
         System.out.println("\nAssociated Tasks:");
         taskService.displayTasksForProject(project);
-        System.out.printf("Completion Rate: %.2f%%%n%n", reportService.calculateProjectCompletionRate(project));
+        try {
+            System.out.printf("Completion Rate: %.2f%%%n%n", reportService.calculateProjectCompletionRate(project));
+        } catch (EmptyProjectException e) {
+            System.out.println("Info: " + e.getMessage());
+        }
 
         System.out.println("Options:");
         System.out.println("1. Add New Task");

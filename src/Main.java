@@ -24,7 +24,7 @@ public class Main {
 
     private static User[] users = new User[] {
             new AdminUser("Katy Great Adonai", "katygreatado@gmail.com"),
-            new RegularUser("Aline Mukundwa", "mukaline@gmail.com")
+            new RegularUser("Aline NZIKWINKUNDA", "nzikaline@gmail.com")
     };
 
 
