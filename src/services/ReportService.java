@@ -2,12 +2,13 @@ package services;
 
 import models.project.Project;
 import models.task.Task;
+import utils.exceptions.EmptyProjectException;
 
 public class ReportService {
 
     public double calculateProjectCompletionRate(Project project) {
         if (project.getTaskCount() == 0) {
-            return 0.0;
+            throw new EmptyProjectException("Project '" + project.getProjectName() + "' has no tasks to calculate completion progress.");
         }
 
         return ((double) calculateTotalCompletedTasks(project) / project.getTaskCount()) * 100;
@@ -37,11 +38,16 @@ public class ReportService {
 
             int completedTasks = calculateTotalCompletedTasks(project);
 
-            double progress = calculateProjectCompletionRate(project);
-            totalCompletionSum += progress;
+            try {
+                double progress = calculateProjectCompletionRate(project);
+                totalCompletionSum += progress;
 
-            System.out.printf("%-10s | %-17s | %-5d | %-9d | %.2f%%%n",
-                    project.getProjectID(), project.getProjectName(), totalTasks, completedTasks, progress);
+                System.out.printf("%-10s | %-17s | %-5d | %-9d | %.2f%%%n",
+                        project.getProjectID(), project.getProjectName(), totalTasks, completedTasks, progress);
+            } catch (EmptyProjectException e) {
+                System.out.println("Info: " + e.getMessage());
+            }
+
         }
 
         double averageCompletion = totalCompletionSum / totalProjects;
