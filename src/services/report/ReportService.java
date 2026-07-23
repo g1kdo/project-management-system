@@ -1,17 +1,18 @@
-package services;
+package services.report;
 
 import models.project.Project;
 import models.task.Task;
+import services.project.ProjectService;
 import utils.exceptions.EmptyProjectException;
 
 public class ReportService {
 
     public double calculateProjectCompletionRate(Project project) {
-        if (project.getTaskCount() == 0) {
+        if (project.getTasks().isEmpty()) {
             throw new EmptyProjectException("Project '" + project.getProjectName() + "' has no tasks to calculate completion progress.");
         }
 
-        return ((double) calculateTotalCompletedTasks(project) / project.getTaskCount()) * 100;
+        return ((double) calculateTotalCompletedTasks(project) / project.getTasks().size()) * 100;
     }
 
     public void generateStatusReport(ProjectService service) {
@@ -34,7 +35,7 @@ public class ReportService {
 
         for (int i = 0; i < totalProjects; i++) {
             Project project = projects[i];
-            int totalTasks = project.getTaskCount();
+            int totalTasks = project.getTasks().size();
 
             int completedTasks = calculateTotalCompletedTasks(project);
 
@@ -58,7 +59,7 @@ public class ReportService {
     }
 
     public int calculateTotalCompletedTasks(Project project) {
-        int totalTasks = project.getTaskCount();
+        int totalTasks = project.getTasks().size();
         if (totalTasks == 0) {
             return 0;
         }

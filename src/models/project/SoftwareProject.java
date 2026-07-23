@@ -4,8 +4,8 @@ import models.task.Task;
 
 public class SoftwareProject extends Project{
 
-    public SoftwareProject(String projectName, String description, double budget) {
-        super(projectName, description, budget);
+    public SoftwareProject(String projectID, String projectName, String description, double budget) {
+        super(projectID, projectName, description, budget);
     }
 
     @Override

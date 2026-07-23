@@ -2,9 +2,9 @@ package utils;
 
 import models.project.Project;
 import models.user.User;
-import services.ProjectService;
-import services.ReportService;
-import services.TaskService;
+import services.project.ProjectService;
+import services.report.ReportService;
+import services.task.TaskService;
 import utils.exceptions.EmptyProjectException;
 
 public class ConsoleMenu {
