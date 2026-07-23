@@ -1,4 +1,4 @@
-package services;
+package services.project;
 
 import models.project.HardwareProject;
 import models.project.Project;
@@ -6,6 +6,8 @@ import models.project.SoftwareProject;
 import models.user.User;
 import utils.exceptions.InvalidInputException;
 import utils.exceptions.ProjectNotFoundException;
+
+import java.util.Set;
 
 /**
  * Business service layer responsible for managing project operations.
@@ -112,7 +114,7 @@ public class ProjectService {
             System.out.println("No members assigned to this project yet.");
             return;
         }
-        User[] members = project.getMembers();
+        Set<User> members = project.getMembers();
         for (int i = 0; i < count; i++) {
             System.out.printf("- %s [%s] (%s)%n", members[i].getUserName(), members[i].getRole(), members[i].getUserEmail());
         }
