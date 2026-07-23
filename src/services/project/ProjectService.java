@@ -3,11 +3,12 @@ package services.project;
 import models.project.HardwareProject;
 import models.project.Project;
 import models.project.SoftwareProject;
+import models.project.Type;
 import models.user.User;
 import utils.exceptions.InvalidInputException;
 import utils.exceptions.ProjectNotFoundException;
 
-import java.util.Set;
+import java.util.*;
 
 /**
  * Business service layer responsible for managing project operations.
@@ -19,60 +20,75 @@ import java.util.Set;
  */
 public class ProjectService {
 
-    private Project[] projects;
-    private int projectCount;
+    private final Map<String, Project> projectCatalog;
 
     public ProjectService() {
-        this.projectCount = 0;
-        this.projects = new Project[100]; // System capacity of 100 projects
+        this.projectCatalog = new HashMap<>();
         initializeSampleData();
     }
 
     private void initializeSampleData() {
-        addProject(new SoftwareProject("Alpha Tracker", "Task tracking app for startups", 15000000.00));
-        addProject(new HardwareProject("IoT Sensor Kit", "Sensor prototype for smart devices", 10000000.00));
-        addProject(new SoftwareProject("Beta Portal", "Customer onboarding dashboard", 45000000.00));
-        addProject(new HardwareProject("Smart Thermostat", "Home automation temperature grid", 22000000.00));
-        addProject(new SoftwareProject("Data Pipeline", "Real-time analytics syncing tool", 60000000.00));
+        addProject(new SoftwareProject("P001","Alpha Tracker", "Task tracking app for startups", 15000000.00));
+        addProject(new HardwareProject("P002", "IoT Sensor Kit", "Sensor prototype for smart devices", 10000000.00));
+        addProject(new SoftwareProject("P003", "Beta Portal", "Customer onboarding dashboard", 45000000.00));
+        addProject(new HardwareProject("P004", "Smart Thermostat", "Home automation temperature grid", 22000000.00));
+        addProject(new SoftwareProject("P005", "Data Pipeline", "Real-time analytics syncing tool", 60000000.00));
     }
 
     public void addProject(Project project) {
-            if (projectCount < projects.length) {
-                projects[projectCount++] = project;
-            } else {
-                System.out.println("❌ Error: Maximum project capacity reached.");
-            }
+        if (project == null)
+            throw new InvalidInputException("Cannot add a null project.");
+        if (projectCatalog.containsKey(project.getProjectID().toUpperCase()))
+            throw new InvalidInputException("Project ID '" + project.getProjectID() + "' already exists.");
+
+        projectCatalog.put(project.getProjectID().toUpperCase(), project);
     }
 
-    public Project[] getAllProjects() {
-        return projects;
+    public Collection<Project> getAllProjects() {
+        return projectCatalog.values();
     }
 
-    public int getProjectCount() {
-        return projectCount;
+    public Map<String, Project> getProjectCatalogMap() {
+        return projectCatalog;
     }
 
     public Project findProjectById(String id) {
-        for (int i = 0; i < projectCount; i++) {
-            if (projects[i].getProjectID().equalsIgnoreCase(id)) {
-                return projects[i];
-            }
-        }
-        throw new ProjectNotFoundException("Project ID '" + id + "' does not exist.");
+        if (id == null)
+            throw new InvalidInputException("Project ID cannot be null.");
+
+        Project project = projectCatalog.get(id.toUpperCase());
+        if (project == null)
+            throw new ProjectNotFoundException("Project ID '" + id + "' does not exist.");
+
+        return project;
     }
 
     public void displayAllProjects() {
-        for (int i = 0; i < projectCount; i++) {
-            projects[i].displayProject();
-            System.out.println("───────────────────────────────────────────────────────────────────────");
+        if (projectCatalog.isEmpty()) {
+            System.out.println("No projects available.");
+            return;
         }
+
+
+        projectCatalog.values().forEach(project ->  {
+            project.displayProject();
+            System.out.println("───────────────────────────────────────────────────────────────────────");
+        });
     }
 
-    public void displayProjectsByType(String type) {
+    public void displayProjectsByType(Type type) {
         boolean found = false;
-        for (int i = 0; i < projectCount; i++) {
-            if (projects[i].getProjectDetails().equalsIgnoreCase(type)) {
-                projects[i].displayProject();
+        for (Project project : projectCatalog.values()) {
+            boolean matchesType = false;
+
+            if (type == Type.SOFTWARE && project instanceof SoftwareProject) {
+                matchesType = true;
+            } else if (type == Type.HARDWARE && project instanceof HardwareProject) {
+                matchesType = true;
+            }
+
+            if (matchesType) {
+                project.displayProject();
                 System.out.println("───────────────────────────────────────────────────────────────────────");
                 found = true;
             }
@@ -84,9 +100,9 @@ public class ProjectService {
 
     public void  searchByBydgetRange(double min, double max) {
         boolean found = false;
-        for (int i = 0; i < projectCount; i++) {
-            if (projects[i].getBudget() >= min && projects[i].getBudget() <= max) {
-                projects[i].displayProject();
+        for (Project project : projectCatalog.values()) {
+            if (project.getBudget() >= min && project.getBudget() <= max) {
+                project.displayProject();
                 System.out.println("───────────────────────────────────────────────────────────────────────");
                 found = true;
             }
@@ -108,15 +124,14 @@ public class ProjectService {
         if (project == null)
             throw new InvalidInputException("Project cannot be found:(");
 
-        int count = project.getTeamSize();
+        Set<User> members = project.getMembers();
         System.out.println("\n--- PROJECT TEAM MEMBERS ---");
-        if (count == 0) {
+        if (members.isEmpty()) {
             System.out.println("No members assigned to this project yet.");
             return;
         }
-        Set<User> members = project.getMembers();
-        for (int i = 0; i < count; i++) {
-            System.out.printf("- %s [%s] (%s)%n", members[i].getUserName(), members[i].getRole(), members[i].getUserEmail());
-        }
+        members.forEach(member ->
+                System.out.printf("- %s [%s] (%s)%n", member.getUserName(), member.getRole(), member.getUserEmail())
+                );
     }
 }

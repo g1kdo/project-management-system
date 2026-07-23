@@ -8,6 +8,8 @@ import models.user.User;
 import utils.exceptions.InvalidInputException;
 import utils.exceptions.TaskNotFoundException;
 
+import java.util.List;
+
 /**
  * Business service layer responsible for manipulating task assignments.
  * Enforces duplicate constraints and implements role-based modifications.
@@ -17,24 +19,25 @@ import utils.exceptions.TaskNotFoundException;
  */
 public class TaskService {
 
-    public void addTaskToProject(Project project, String taskName) {
-        // Duplication check within the project's own task array
-        Task[] tasks = project.getTasks();
-        for (int i = 0; i < project.getTaskCount(); i++) {
-            if (tasks[i].getTaskName().equalsIgnoreCase(taskName)) {
-                throw new InvalidInputException("❌ Error: A task with this name already exists in the project:(");
-            }
-        }
+    public void addTaskToProject(Project project, Task task) {
+        if (project == null || task == null)
+            throw new InvalidInputException("Project or Task cannot be null.");
 
-        Task newTask = new Task(taskName, Status.PENDING); // By default the initial status is pending
-        project.addTask(newTask);
-        System.out.printf("✓ Task \"%s\" added successfully to Project %s:)%n", taskName, project.getProjectID());
+        // Duplication check within the project's own task list using Streams
+        boolean duplicateExists = project.getTasks().stream()
+                .anyMatch(t -> t.getTaskID().equalsIgnoreCase(task.getTaskID()) || t.getTaskName().equalsIgnoreCase(task.getTaskName()));
+
+        if (duplicateExists)
+            throw new InvalidInputException("A task with the same ID or Name already exists in this project.");
+
+        project.addTask(task);
+        System.out.printf("✓ Task \"%s\" added successfully to Project %s:)%n", project.getProjectName(), project.getProjectID());
     }
 
     public void displayTasksForProject(Project project) {
-        int taskCount = project.getTaskCount();
-        if (taskCount == 0) {
-            System.out.println("No tasks found for this project:(");
+        List<Task> tasks = project.getTasks();
+        if (tasks.isEmpty()) {
+            System.out.println("No tasks found for this project.");
             return;
         }
 
@@ -42,59 +45,41 @@ public class TaskService {
         System.out.printf("%-4s | %-20s | %-12s%n", "ID", "TASK NAME", "STATUS");
         System.out.println("───────────────────────────────────────────────────────────────────────");
 
-        Task[] tasks = project.getTasks();
-        for (int i = 0; i < taskCount; i++) {
-            System.out.printf("%-4s | %-20s | %-12s%n", tasks[i].getTaskID(), tasks[i].getTaskName(), tasks[i].getStatus().name());
-        }
+        tasks.forEach(task ->
+                System.out.printf("%-4s | %-20s | %-12s%n", task.getTaskID(), task.getTaskName(), task.getStatus().name())
+        );
         System.out.println("───────────────────────────────────────────────────────────────────────");
     }
 
-    public void updateTaskStatus(Project project, String taskId, Status newStatus, User currentUser) {
+    public void updateTaskStatus(Project project, String taskId, String newStatus, User currentUser) {
         // Enforce user permission checks
-        if (!Role.ADMIN.equals(currentUser.getRole())) {
+        if (currentUser == null || !Role.ADMIN.equals(currentUser.getRole())) {
             throw new InvalidInputException("❌ Error: Action denied. Only Admin users can update task statuses.");
         }
 
-        Task[] tasks = project.getTasks();
-        for (int i = 0; i < project.getTaskCount(); i++) {
-            if (tasks[i].getTaskID().equalsIgnoreCase(taskId)) {
-                tasks[i].setStatus(newStatus);
-                System.out.printf("Task \"%s\" marked as %s.%n", tasks[i].getTaskName(), newStatus.name());
-            }
-        }
-        throw new TaskNotFoundException("❌ Error: Task ID '" + taskId + "' not found in this project:(");
+        Task taskToUpdate = project.getTasks().stream()
+                .filter(t -> t.getTaskID().equalsIgnoreCase(taskId))
+                .findFirst()
+                .orElseThrow(() -> new TaskNotFoundException("Task ID '" + taskId + "' not found in this project:("));
+
+        taskToUpdate.setStatus(newStatus);
+        System.out.printf("Task \"%s\" marked as %s.%n", taskToUpdate.getTaskName(), taskToUpdate.getStatus().name());
     }
 
     public void removeTask(Project project, String taskId, User currentUser) {
         // Enforce user permission checks
-        if (!Role.ADMIN.equals(currentUser.getRole())) {
-            System.out.println("❌ Error: Action denied. Only Admin users can remove tasks.");
-            return;
+        if (currentUser == null || !Role.ADMIN.equals(currentUser.getRole())) {
+            throw new InvalidInputException("❌ Error: Action denied. Only Admin users can remove tasks.");
         }
 
-        Task[] tasks = project.getTasks();
-        int count = project.getTaskCount();
-        int targetIndex = -1;
+        Task taskToRemove = project.getTasks().stream()
+                .filter(t -> t.getTaskID().equalsIgnoreCase(taskId))
+                .findFirst()
+                .orElseThrow(() -> new TaskNotFoundException("Task ID '" + taskId + "' not found in this project:("));
 
-        for (int i = 0; i < count; i++) {
-            if (tasks[i].getTaskID().equalsIgnoreCase(taskId)) {
-                targetIndex = i;
-                break;
-            }
-        }
+        project.getTasks().remove(taskToRemove);
 
-        if (targetIndex == -1) {
-            System.out.println("❌ Error: Task Id not found:(");
-            return;
-        }
-
-        // shift items over to fill the gap
-        for (int i = targetIndex; i < count - 1; i++) {
-            tasks[i] = tasks[i + 1];
-        }
-        tasks[count - 1] = null; // clean up the tail
-        project.setTaskCount(count - 1); // decrement taskCount
-
-        System.out.println("✓ Task removed successfully:)");
+        System.out.printf("✓ Task \"%s\" removed successfully from Project %s:)%n",
+                taskToRemove.getTaskName(), project.getProjectID());
     }
 }
