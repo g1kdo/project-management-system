@@ -67,6 +67,7 @@ public class FileUtils {
                 if (i < projectList.size() - 1) jsonBuilder.append(",");
                 jsonBuilder.append("\n");
             }
+            jsonBuilder.append("]\n");
             Files.writeString(path, jsonBuilder.toString());
             System.out.println("Saving project data...");
             System.out.println("✓ Data written to " + FILE_PATH + " successfully!");
@@ -97,53 +98,38 @@ public class FileUtils {
                 return;
 
             // simple parsing strategy for flat structure
-            String[] projectBlocks = content.split("\\{\\s*\"projectId\"");
+            String[] projectBlocks = content.split("\\{");
             int loadedCount = 0;
 
             for (String block : projectBlocks) {
-                if (!block.contains("name")) continue;
+                if (!block.contains("\"projectId\"")) continue;
 
                 String id = extractJsonField(block, "projectId");
-                if (id == null || id.isEmpty()) {
-                    id = extractJsonField(block, "id");
-                }
+
+                if (id == null || id.isEmpty()) continue;
+
                 String name = extractJsonField(block, "name");
                 String type = extractJsonField(block, "type");
                 String description = extractJsonField(block, "description");
                 double budget = extractJsonDoubleField(block, "budget");
 
-                if (id != null && name != null) {
-                    Project project;
-                    if (Type.HARDWARE.name().equalsIgnoreCase(type)) {
-                        project = new HardwareProject(id, name, description != null ? description : "", budget);
-                    } else {
-                        project = new SoftwareProject(id, name, description != null ? description : "", budget);
-                    }
-
-                    // Parse tasks inside this project block
-                    int tasksStartIndex = block.indexOf("\"tasks\":");
-                    if (tasksStartIndex != -1) {
-                        String tasksBlock = block.substring(tasksStartIndex);
-                        String[] taskEntries = tasksBlock.split("\\{\\s*\"id\"");
-
-                        for (String taskEntry : taskEntries) {
-                            String taskId = extractJsonField(taskEntry, "id");
-                            String taskName = extractJsonField(taskEntry, "name");
-                            String taskStatus = extractJsonField(taskEntry, "status");
-
-                            if (taskId != null && taskName != null && taskStatus != null) {
-                                try {
-                                    Task task = new Task(taskId, taskName, Status.valueOf(taskStatus));
-                                    project.addTask(task);
-                                } catch (IllegalArgumentException | InvalidInputException e) {
-                                    // Skip malformed individual tasks safely
-                                }
-                            }
+                if (name != null) {
+                    try {
+                        Project project;
+                        if (Type.HARDWARE.name().equalsIgnoreCase(type)) {
+                            project = new HardwareProject(id, name, description != null ? description : "", budget);
+                        } else {
+                            project = new SoftwareProject(id, name, description != null ? description : "", budget);
                         }
+
+                        loadTasks(block, project);
+
+                        projectCatalog.put(project.getProjectID().toUpperCase(), project);
+                        loadedCount++;
+                    } catch (InvalidInputException e) {
+                        System.out.println("⚠️ Warning: Skipped invalid project block from file: " + e.getMessage());
                     }
 
-                    projectCatalog.put(project.getProjectID().toUpperCase(), project);
-                    loadedCount++;
                 }
             }
 
@@ -154,16 +140,69 @@ public class FileUtils {
         }
     }
 
-    private static String extractJsonField(String jsonBlock, String fieldName) {
-        String key = "\"" + fieldName + "\":";
-        int keyIndex = jsonBlock.indexOf(key);
-        if (keyIndex == -1) return null;
+    private static void loadTasks(String projectBlock, Project project) {
 
-        int startQuote = jsonBlock.indexOf("\"", keyIndex, key.length());
-        if (startQuote == -1) return null;
+        int tasksIndex = projectBlock.indexOf("\"tasks\"");
+
+        if (tasksIndex == -1) {
+            return;
+        }
+
+        String tasksSection = projectBlock.substring(tasksIndex);
+
+        String[] taskBlocks = tasksSection.split("\\{");
+
+        for (String taskBlock : taskBlocks) {
+
+            if (!taskBlock.contains("\"id\"")) {
+                continue;
+            }
+
+            String taskId = extractJsonField(taskBlock, "id");
+            String taskName = extractJsonField(taskBlock, "name");
+            String taskStatus = extractJsonField(taskBlock, "status");
+
+            if (taskId != null && taskName != null && taskStatus != null) {
+                try {
+                    Task task = new Task(
+                            taskId,
+                            taskName,
+                            Status.valueOf(taskStatus)
+                    );
+
+                    project.addTask(task);
+
+                } catch (IllegalArgumentException | InvalidInputException e) {
+                    System.out.println(
+                            "Skipping invalid task: " + taskId
+                    );
+                }
+            }
+        }
+    }
+
+    private static String extractJsonField(String jsonBlock, String fieldName) {
+        String key = "\"" + fieldName + "\"";
+
+        int keyIndex = jsonBlock.indexOf(key);
+        if (keyIndex == -1) {
+            return null;
+        }
+
+        int colonIndex = jsonBlock.indexOf(":", keyIndex);
+        if (colonIndex == -1) {
+            return null;
+        }
+
+        int startQuote = jsonBlock.indexOf("\"", colonIndex);
+        if (startQuote == -1) {
+            return null;
+        }
 
         int endQuote = jsonBlock.indexOf("\"", startQuote + 1);
-        if (endQuote == -1) return null;
+        if (endQuote == -1) {
+            return null;
+        }
 
         return jsonBlock.substring(startQuote + 1, endQuote);
     }
