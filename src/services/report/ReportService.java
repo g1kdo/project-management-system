@@ -46,7 +46,7 @@ public class ReportService {
                 System.out.printf("%-10s | %-17s | %-5d | %-9d | %.2f%%%n",
                         project.getProjectID(), project.getProjectName(), project.getTasks().size(), completedTasks, progress);
             } catch (EmptyProjectException e) {
-                System.out.println("Info: " + e.getMessage());
+//                System.out.println("Info: " + e.getMessage());
             }
 
         }
