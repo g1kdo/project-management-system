@@ -35,6 +35,7 @@ public abstract class Project {
         RegexValidator.validateProjectId(projectID);
         if (projectName == null || projectName.strip().isEmpty())
             throw  new InvalidInputException("Project name cannot be empty.");
+        if (budget <= 0) throw new InvalidInputException("Budget cannot be negative.");
         this.projectID = projectID;
         this.projectName = projectName;
         this.description = description;

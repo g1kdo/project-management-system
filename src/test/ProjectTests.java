@@ -6,7 +6,7 @@ import models.task.Status;
 import models.task.Task;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import services.ReportService;
+import services.report.ReportService;
 import utils.exceptions.EmptyProjectException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -18,16 +18,16 @@ public class ProjectTests {
 
     @BeforeEach
     void setup() {
-        project = new SoftwareProject("Alpha Tracker", "Core development tracking space", 15000000.00);
+        project = new SoftwareProject("P001","Alpha Tracker", "Core development tracking space", 15000000.00);
         reportService = new ReportService();
     }
 
     @Test
     void testCalculateCompletionPercentage_PartialCompletion() {
-        project.addTask(new Task("Setup Database", Status.COMPLETED));
-        project.addTask(new Task("Implement API Layer", Status.IN_PROGRESS));
-        project.addTask(new Task("Write Frontend", Status.PENDING));
-        project.addTask(new Task("Execute Integration Tests", Status.PENDING));
+        project.addTask(new Task("T001", "Setup Database", Status.COMPLETED));
+        project.addTask(new Task("T002","Implement API Layer", Status.IN_PROGRESS));
+        project.addTask(new Task("T003","Write Frontend", Status.PENDING));
+        project.addTask(new Task("T004","Execute Integration Tests", Status.PENDING));
 
         double expectedRate = 25.0;
         double actualRate = reportService.calculateProjectCompletionRate(project);
@@ -44,8 +44,8 @@ public class ProjectTests {
 
     @Test
     void testCalculateCompletionPercentage_AllCompleted() {
-        project.addTask(new Task("Setup Database", Status.COMPLETED));
-        project.addTask(new Task("Implement API Layer", Status.COMPLETED));
+        project.addTask(new Task("T001","Setup Database", Status.COMPLETED));
+        project.addTask(new Task("T002","Implement API Layer", Status.COMPLETED));
 
         double expectedRate = 100.0;
         double actualRate = reportService.calculateProjectCompletionRate(project);
