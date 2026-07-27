@@ -23,20 +23,18 @@ public class UserService {
     }
 
     public void registerUser(User user) {
-        if (userCatalog.containsKey(user.getUserName().toLowerCase()))
-            throw new InvalidInputException("Username '\" + user.getUsername() + \"' is already registered.");
+        if (userCatalog.containsKey(user.getUserEmail().toLowerCase()))
+            throw new InvalidInputException("User email '" + user.getUserEmail() + "' is already registered.");
 
-        userCatalog.put(user.getUserName().toLowerCase(), user);
+        userCatalog.put(user.getUserEmail().toLowerCase(), user);
     }
 
-    public User login(String username, String password) {
+    public void login(String username, String password) {
         User user = userCatalog.get(username.toLowerCase());
         if (user == null || !user.verifyPassword(password))
             throw new InvalidInputException("Invalid username or password.");
 
         this.currentUser = user;
-        System.out.println("✓ Welcome back, " + user.getUserName() + " [" + user.getRole() + "]!");
-        return user;
     }
 
     public void logout() {
