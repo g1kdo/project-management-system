@@ -2,6 +2,7 @@ package models.task;
 
 import interfaces.Completable;
 import utils.RegexValidator;
+import utils.ValidationUtils;
 import utils.exceptions.InvalidInputException;
 
 /**
@@ -9,7 +10,7 @@ import utils.exceptions.InvalidInputException;
  * Implements the {@link interfaces.Completable} interface to track status life cycles.
  *
  * @author Katy Great Adonai
- * @version 2.0
+ * @version 3.0
  */
 public class Task implements Completable {
 
@@ -43,19 +44,7 @@ public class Task implements Completable {
     }
 
     public synchronized void setStatus(String status) {
-        this.status = validateAndNormalizeStatus(status);
-    }
-
-    private Status validateAndNormalizeStatus(String status) {
-        if (status == null)
-            throw new InvalidInputException("Status cannot be null.");
-
-        return switch (status.toLowerCase()) {
-            case "c" -> Status.COMPLETED;
-            case "i" -> Status.IN_PROGRESS;
-            case "p" -> Status.PENDING;
-            default -> throw new InvalidInputException("❌ Error: Invalid status. Please choose from [Pending p, In Progress i, Completed c].");
-        };
+        this.status = ValidationUtils.validateAndNormalizeStatus(status);
     }
 
     @Override

@@ -19,7 +19,7 @@ import java.util.Set;
  * active count of assigned team members.</p>
  *
  * @author Katy Great Adonai
- * @version 2.0
+ * @version 3.0
  */
 public abstract class Project {
 
