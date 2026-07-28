@@ -35,26 +35,33 @@ project-management-system/
 |   │       └── Role.java                 # User Role Enum
 │   │
 │   ├── interfaces/
+|   |   ├── TaskFilter.java           # Interface for filtering logic
 │   │   └── Completable.java          # Interface for completion logic
 │   │
 │   ├── services/
 │   │   ├── ProjectService.java       # Project operations
 │   │   ├── TaskService.java          # Task operations
-│   │   └── ReportService.java        # Reporting logic
+│   │   ├── ReportService.java        # Reporting logic
+│   │   ├── StreamService.java        # Stream filtering, mapping, & reduction operations
+│   │   └── ConcurrencyService.java   # Thread-safe multi-threaded update simulation
 │   │
 │   └── utils/
 │       ├── ConsoleMenu.java          # Menu handling
 │       ├── ValidationUtils.java      # Input validation
+│       ├── FileUtils.java            # NIO persistence read/write routines
+│       ├── RegexValidator.java       # Pattern matching validation utilities
 │       └── exceptions/               # Custom runtime boundaries
 │           ├── InvalidInputException.java
 │           ├── TaskNotFoundException.java
 │           ├── EmptyProjectException.java
-│           └── ProjectNotFoundException.java[cite: 2]
+│           └── ProjectNotFoundException.java
 │
 ├── test/                             # Automated JUnit validation suites[cite: 2]
 │   ├── ProjectTests.java
 │   ├── TaskTests.java
-│   └── ValidationTests.java
+│   ├── ValidationTests.java
+│   ├── StreamOperationsTest.java
+|   └── FilePersistenceTest.java
 |
 |
 ├── docs/
@@ -83,40 +90,28 @@ button at the top of the window.
 > To verify code stability, execute the suites inside the `/test` folder via the integrated test runner window.
 
 ---
-## Feature Summary
 
-### Feature 1: Project Catalog Management
+## Key Features
 
-Following the Epic 1: Project Catalog Management, the user is able to:
-- Create new projects (e.g., `SoftwareProject`, `HardwareProject`)
-- View all existing projects with explicit, scannable data layouts
-- Filter projects dynamically by specific type configurations
-- Enforce positive budget allocations and validate records via standard exception traps
+1. **Interactive User Authentication**
+    - Register as an `AdminUser` or `RegularUser`.
+    - Log in using username and password verification.
+    - Session-aware role restrictions for sensitive task updates.
 
-### Feature 2: Task Operations
+2. **Project Catalog (HashMap)**
+    - Create and manage projects (`SoftwareProject`, `HardwareProject`).
+    - Standardized catalog keys utilizing `$O(1)$` HashMap storage.
 
-Following the Epic 2: Task Operations, the user is able to:
-- Add tasks to specific projects with validation preventing duplicate names
-- Assign and track normalized statuses (Pending, In Progress, Completed)
-- Update tasks gracefully while intercepting bad actions via `TaskNotFoundException`
+3. **Regex Pattern Enforcement**
+    - Strict pattern verification for Project IDs (`P###`), Task IDs (`T###`), and user email strings.
 
-### Feature 3: User Management & Dynamic Teams
+4. **Stream Processing Engine**
+    - Filter projects based on task completion percentage thresholds.
+    - Map and extract list attributes across complex project lists using streams.
 
-Following the Epic 3: User Management, the system is able to:
-- Manage system profiles (`RegularUser` and `AdminUser`) with role-based restrictions
-- Dynamically add users as members to target projects (`joinProject`)
-- Calculate team size properties continuously based on real member arrays, removing manual variables
-- Review project rosters inside an isolated team dashboard (`viewTeam`)
+5. **JSON File Persistence**
+    - Save and load state from `data/projects_data.json` using `java.nio.file.Files`.
+    - Automatic pre-validation shields data from corrupted input blocks.
 
-### Feature 4: Status Processing & Reporting
-
-Following the Epic 4: Status Processing & Reporting, the system is able to:
-- Calculate exact completion percentages using object method boundaries
-- Throw an explicit `EmptyProjectException` when generating progress calculations over unassigned project objects
-- Round progress and average fields to two decimal places
-
-### Feature 5: Menu Navigation & Error Stability
-
-Following the Epic 5: Menu Navigation & Application Control, the system is able to:
-- Present menu layers without experiencing hard runtime crashes during bad entry inputs
-- Log clean warning strings to the console user, prompting immediate input correction cycles
+6. **Parallel Concurrency Engine**
+    - Thread-safe task state update simulation using `Thread`, `Runnable`, and `synchronized` locking boundaries.
