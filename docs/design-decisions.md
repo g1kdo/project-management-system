@@ -1,161 +1,89 @@
-# Design Decisions
+# Design Decisions & Architecture
 
 ## Overview
 
-The Project Management System was designed using Object-Oriented Programming (OOP) principles to create a modular,
-maintainable, and extensible console application. The system separates responsibilities into models, interfaces, services, and
-utility classes, making it easier to manage application logic and support future enhancements.
+The Project Management System is built using Object-Oriented Programming (OOP), Functional Programming (Streams/Lambdas), and Java Concurrency principles to create a modular, thread-safe, and persistent application. The system decouples responsibilities into models, interfaces, services, utilities, and persistence handlers.
 
 ---
-# 1. Separation of Concerns
 
-The application is divided into three major layers:
+# 1. Separation of Concerns & Modular Architecture
 
-- **Models**
-    - Represent the application's data and encapsulate baseline constraints.
-    - Examples:
-        - Project
-        - Task
-        - User
+The application is structured into clear layers:
 
-- **Services**
-    - Contain business logic and coordinate state mutations safely.
-    - Examples:
-        - ProjectService
-        - TaskService
-        - ReportService
+- **Models (`models.project`, `models.task`, `models.user`)**
+    - Encapsulate data, domain rules, and regex constraint validation.
+    - Examples: `Project`, `SoftwareProject`, `HardwareProject`, `Task`, `User`, `AdminUser`, `RegularUser`.
 
-- **Utilities**
-    - Handle reusable helper functionality, input parsing, and custom error types.
-    - Examples:
-        - ValidationUtils
-        - ConsoleMenu
-        - Exceptions (`InvalidInputException`, `TaskNotFoundException`, `EmptyProjectException`, `ProjectNotFoundException`)
+- **Services (`services`)**
+    - Encapsulate domain logic, streaming filters, user authentication, and multi-threaded simulations.
+    - Examples: `ProjectService`, `TaskService`, `UserService`, `StreamService`, `ConcurrencyService`.
 
-In addition, the application uses a `Completable` interface to define behavior for objects that can report whether they are complete.
-The `Task` class implements this interface by providing the `isCompleted()` method based on the task's current status.
+- **Utilities & Persistence (`utils`)**
+    - Provide validation utilities, string parsing, regular expression enforcement, and JSON file I/O operations.
+    - Examples: `ValidationUtils`, `RegexValidator`, `FileUtils`.
 
-This separation keeps the `Main` class focused on controlling program flow rather than implementing business logic.
+- **Exceptions (`utils.exceptions`)**
+    - Typed runtime exceptions for fail-fast error handling (`InvalidInputException`, `TaskNotFoundException`, `ProjectNotFoundException`, `EmptyProjectException`).
 
 ---
-# 2. Use of Inheritance & Dynamic Association
 
-Inheritance was used to model different project and user types.
+# 2. Dynamic Collections over Fixed Arrays
 
-## Projects
-
-The abstract `Project` class stores shared information such as:
-
-- ID
-- Name
-- Description
-- Budget
-- Members (An array of assigned `User` objects replacing manual tracking)
-- Tasks
-
-Specific project types extend this class:
-
-- SoftwareProject
-- HardwareProject
-
-Instead of entering team sizes manually, projects now dynamically maintain a roster of concrete `User` entities. Calling
-`getTeamSize()` evaluates the runtime occupancy of the member array, enforcing a strong object association.
+The system replaces fixed-size native arrays with standard Java Collections framework structures:
+- **`Map<String, Project>` (`HashMap`)**: Serves as the high-performance project catalog, enabling $O(1)$ lookup time by Project ID.
+- **`List<Task>` (`ArrayList`)**: Stores project tasks dynamically without arbitrary array boundaries.
+- **`List<User>` (`ArrayList`)**: Maintains project team member rosters.
 
 ---
-## Users
 
-The application also models users using inheritance.
+# 3. User Authentication & Role-Based Access Control (RBAC)
 
-```
-User
-   │
-   ├── AdminUser
-   └── RegularUser
-```
-
-Both users share common attributes such as:
-
-- Name
-- Email
-
-while each subclass provides its own role.
+Rather than hardcoding standard default users, `UserService` manages interactive system access:
+- **Authentication Flow**: Supports real user registration (`AdminUser` vs. `RegularUser`) and login via username/password verification.
+- **Active Session Tracking**: Maintains a thread-safe reference to the logged-in `currentUser`.
+- **Role Enforcement**: Critical operations (such as updating task statuses across projects) check user role privileges before executing actions.
 
 ---
-# 3. Polymorphism
 
-The program stores different project types using the common `Project` type.
+# 4. Streams & Functional Programming
 
-Example:
-
-```
-Project newProject;
-
-    newProject = new SoftwareProject(...);
-
-    newProject = new HardwareProject(...);
-```
-
-This allows the rest of the application to work with projects without needing to know their concrete type.
-
-The same approach is used for users.
+The application utilizes Java Streams and functional paradigms (`map`, `filter`, `flatMap`, `collect`, method references) via `StreamService`:
+- Filtering projects based on task completion percentage thresholds.
+- Extracting list projections (e.g., task names within projects).
+- Aggregate calculations across projects using `flatMap` to evaluate global completion counts safely.
 
 ---
-# 4. Role-Based Access Control
 
-Administrative actions are protected using user roles.
+# 5. Regex Input Validation
 
-For example:
-
-- Only administrators may remove tasks.
-
-- Only administrators may change task status.
-
-The current user profile is passed into service layers to check compliance before modifying tasks, throwing an exception if unauthorized.
+Data integrity is guaranteed using pattern matching (`java.util.regex`):
+- **Project IDs**: Strictly enforces `P\d{3}` (e.g., `P001`, `P004`).
+- **Task IDs**: Strictly enforces `T\d{3}` (e.g., `T001`).
+- **Emails**: Validates standard RFC 5322 string formats.
+- Pre-validation occurs prior to instantiation, protecting project and task objects from corrupt states.
 
 ---
-# 5. Robust Exception Handling
 
-User validation is backed by a custom exception framework under `utils.exceptions`. Instead of traditional conditional error printing, unexpected operations trigger explicitly typed exceptions:
+# 6. Persistence & File I/O (NIO)
 
-- `InvalidInputException`: Thrown when project metrics or status parameters fail formatting laws.
-
-- `ProjectNotFoundException`: Dispatched when querying mismatched project identifiers.
-
-- `TaskNotFoundException`: Handled when target tasks cannot be discovered within parent projects.
-
-- `EmptyProjectException`: Raised when progress summaries run against projects completely devoid of active tasks.
-
-Centralizing validation avoids duplicate code and shields the runtime container from sudden input-driven failures.
+Data is saved to and restored from disk (`data/projects_data.json`) using `java.nio.file.Files` and standard stream parsing:
+- **Startup Auto-Load**: `FileUtils.loadProjects(...)` restores project catalog states and task listings.
+- **Safe Parsing Safeguard**: Blocks malformed or invalid IDs using `RegexValidator` before constructor invocation, preventing startup crashes.
+- **Exit Auto-Save**: Serializes catalog objects to JSON format on application exit.
 
 ---
-# 6. Automated Unit Testing
 
-The core completion and membership mechanics are verified utilizing JUnit testing frameworks. This guarantees that formula 
-changes, status adjustments, and registration constraints yield reliable outcomes under rigorous boundary constraints.
+# 7. Concurrency & Thread Safety
 
----
-# 7. In-Memory Storage
-
-Projects and users remain stored inside bounded arrays during execution, satisfying the pure in-memory constraints without 
-requiring an active external database layer.
+Multi-threaded task state modifications are managed in `ConcurrencyService`:
+- Worker threads update task states in parallel using `Thread` and `Runnable`.
+- Uses `synchronized` blocks on shared task instances to prevent race conditions during concurrent state updates.
 
 ---
-# Summary
 
-The design emphasizes:
+# 8. Automated JUnit 5 Test Suite
 
-Object-Oriented Programming principles
-
-- Separation of concerns
-
-- Inheritance and polymorphism
-
-- Role-based access control
-
-- Clean, decoupled service operations (SOLID)
-
-- Custom exception propagation and stable menu loops
-
-- Dynamic model cross-linking
-
-- High maintainability and testability via JUnit suites
+Unit testing spans functional operations:
+- Stream mapping and reduction filters (`StreamOperationsTest`).
+- File persistence I/O serialization (`FilePersistenceTest`).
+- Dynamic catalog management and regex input checks.

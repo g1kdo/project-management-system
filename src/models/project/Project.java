@@ -2,7 +2,13 @@ package models.project;
 
 import models.task.Task;
 import models.user.User;
+import utils.RegexValidator;
 import utils.exceptions.InvalidInputException;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Represents an abstract Project within the system.
@@ -13,33 +19,29 @@ import utils.exceptions.InvalidInputException;
  * active count of assigned team members.</p>
  *
  * @author Katy Great Adonai
- * @version 2.0
+ * @version 3.0
  */
 public abstract class Project {
 
-    private static int idCounter = 1;
     private final String projectID;
     private String projectName;
     private String description;
     private double budget;
 
-    private User[] members;
-    private int teamSize;
+    private Set<User> members;
+    private List<Task> tasks;
 
-    private Task[] tasks;
-    private int taskCount;
-
-    public Project(String projectName, String description, double budget) {
+    public Project(String projectID, String projectName, String description, double budget) {
+        RegexValidator.validateProjectId(projectID);
         if (projectName == null || projectName.strip().isEmpty())
             throw  new InvalidInputException("Project name cannot be empty.");
-        this.projectID = String.format("PRJ%03d", idCounter++);
+        if (budget <= 0) throw new InvalidInputException("Budget cannot be negative.");
+        this.projectID = projectID;
         this.projectName = projectName;
         this.description = description;
         this.budget = budget;
-        this.members = new User[100]; // max 100 members per project
-        this.teamSize = 0;
-        this.tasks = new Task[50]; // max 50 tasks per project
-        this.taskCount = 0;
+        this.members = new HashSet<>();
+        this.tasks = new ArrayList<>();
     }
 
     public String getProjectID() {
@@ -58,54 +60,41 @@ public abstract class Project {
         return budget;
     }
 
-    public User[] getMembers() {
+    public Set<User> getMembers() {
         return members;
     }
 
     public int getTeamSize() {
-        return teamSize;
+        return members.size();
     }
 
-    public Task[] getTasks() {
+    public List<Task> getTasks() {
         return tasks;
-    }
-
-    public int getTaskCount() {
-        return taskCount;
-    }
-
-    public void setTaskCount(int taskCount) {
-        this.taskCount = taskCount;
     }
 
     public void addMember(User user) {
         if (user == null)
             throw new InvalidInputException("No users found to add to project:(");
 
-        // prevent adding duplicate users
-        for (int i = 0; i < teamSize; i++) {
-            if (members[i].getUserID().equals(user.getUserID()))
-                throw new InvalidInputException("User '" + user.getUserName() + "' is already a member of this project.");
-        }
-        if (teamSize >= members.length)
-            throw new InvalidInputException("Member capacity reached for this project.");
+        boolean isAdded = members.add(user);
 
-        members[teamSize++] = user;
+        if (!isAdded)
+            throw new InvalidInputException("User '" + user.getUserName() + "' is already a member of this project.");
     }
 
     public void addTask(Task task) {
         if (task == null)
             throw new InvalidInputException("Cannot add a null task.");
-        if (taskCount >= tasks.length)
-            throw new InvalidInputException("Task limit of " + tasks.length + " reached for this project");
+        if (tasks.stream().anyMatch(t -> t.getTaskID().equalsIgnoreCase(task.getTaskID())))
+            throw new InvalidInputException("Task ID '" + task.getTaskID() + "' already exists in this project.");
 
-        tasks[taskCount++] = task;
+        tasks.add(task);
     }
 
     public abstract String getProjectDetails();
     public void displayProject() {
         System.out.printf("%-4s | %-20s | %-12s | %-9d | Rwf%,.2f%n",
-                projectID, projectName, getProjectDetails(), teamSize, budget);
+                projectID, projectName, getProjectDetails(), getTeamSize(), budget);
         System.out.println("    | Description: " + description);
     }
 }
