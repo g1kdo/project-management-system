@@ -1,6 +1,7 @@
 package utils;
 
-import models.task.Task;
+import models.task.Status;
+import utils.exceptions.InvalidInputException;
 
 import java.util.Scanner;
 
@@ -44,6 +45,18 @@ public class ValidationUtils {
             }
 
         }
+    }
+
+    public static Status validateAndNormalizeStatus(String status) {
+        if (status == null)
+            throw new InvalidInputException("Status cannot be null.");
+
+        return switch (status.toLowerCase()) {
+            case "completed" -> Status.COMPLETED;
+            case "in_progress" -> Status.IN_PROGRESS;
+            case "pending" -> Status.PENDING;
+            default -> throw new InvalidInputException("❌ Error: Invalid status. Please choose from [Pending p, In Progress i, Completed c].");
+        };
     }
 
 }

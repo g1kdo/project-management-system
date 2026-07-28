@@ -1,6 +1,8 @@
 package models.task;
 
 import interfaces.Completable;
+import utils.RegexValidator;
+import utils.ValidationUtils;
 import utils.exceptions.InvalidInputException;
 
 /**
@@ -8,19 +10,19 @@ import utils.exceptions.InvalidInputException;
  * Implements the {@link interfaces.Completable} interface to track status life cycles.
  *
  * @author Katy Great Adonai
- * @version 2.0
+ * @version 3.0
  */
 public class Task implements Completable {
 
-    private static int idCounter = 1;
     private final String taskID;
     private String taskName;
     private Status status;
 
-    public Task(String taskName, Status status) {
+    public Task(String taskID, String taskName, Status status) {
+        RegexValidator.validateTaskId(taskID);
         if (taskName == null || taskName.strip().isEmpty())
             throw new InvalidInputException("Task name cannot be empty.");
-        this.taskID = String.format("TSK%03d", idCounter++);
+        this.taskID = taskID;
         this.taskName = taskName;
         this.status = status;
     }
@@ -41,8 +43,8 @@ public class Task implements Completable {
         return status;
     }
 
-    public void setStatus(Status status) {
-        this.status = status;
+    public synchronized void setStatus(String status) {
+        this.status = ValidationUtils.validateAndNormalizeStatus(status);
     }
 
     @Override

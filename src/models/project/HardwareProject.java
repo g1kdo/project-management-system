@@ -4,8 +4,8 @@ import models.task.Task;
 
 public class HardwareProject extends Project{
 
-    public HardwareProject(String projectName, String description, double budget) {
-        super(projectName, description, budget);
+    public HardwareProject(String projectID, String projectName, String description, double budget) {
+        super(projectID, projectName, description, budget);
     }
 
     @Override

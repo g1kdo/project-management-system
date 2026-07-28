@@ -2,9 +2,9 @@ package utils;
 
 import models.project.Project;
 import models.user.User;
-import services.ProjectService;
-import services.ReportService;
-import services.TaskService;
+import services.project.ProjectService;
+import services.report.ReportService;
+import services.task.TaskService;
 import utils.exceptions.EmptyProjectException;
 
 public class ConsoleMenu {
@@ -12,7 +12,7 @@ public class ConsoleMenu {
         System.out.println("\n╔════════════════════════════════════════════╗");
         System.out.println("║     JAVA PROJECT MANAGEMENT SYSTEM         ║");
         System.out.println("╚════════════════════════════════════════════╝");
-        System.out.printf("Current User: %s (%s)%n%n", currentUser.getUserName(), currentUser.getRole());
+        System.out.printf("Welcome %s (%s), good to see you again!%n%n", currentUser.getUserName(), currentUser.getRole());
         System.out.println("Main Menu:");
         System.out.println("-----------");
         System.out.println("1. Manage Projects");
@@ -27,12 +27,13 @@ public class ConsoleMenu {
         System.out.println("║               PROJECT CATALOG              ║");
         System.out.println("╚════════════════════════════════════════════╝");
         System.out.println("Filter Options:");
-        System.out.printf("1. View All Projects (%d)%n", service.getProjectCount());
+        System.out.printf("1. View All Projects (%d)%n", service.getAllProjects().size());
         System.out.println("2. Software Projects Only");
         System.out.println("3. Hardware Projects Only");
         System.out.println("4. Search by Budget Range");
         System.out.println("5. Add New Project");
-        System.out.println("6. Back to Main Menu");
+        System.out.println("6. Filter Projects by Completion Rate");
+        System.out.println("7. Back to Main Menu");
     }
 
     public static void printDetailsMenu(Project project, TaskService taskService, ReportService reportService) {
@@ -55,8 +56,9 @@ public class ConsoleMenu {
         System.out.println("1. Add New Task");
         System.out.println("2. Update Task Status");
         System.out.println("3. Remove Task");
-        System.out.println("4. View Assigned Team Members");
-        System.out.println("5. Join This Project Team");
-        System.out.println("6. Back to Catalog");
+        System.out.println("4. Simulate Concurrent Task Updates");
+        System.out.println("5. View Assigned Team Members");
+        System.out.println("6. Join This Project Team");
+        System.out.println("7. Back to Catalog");
     }
 }
